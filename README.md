@@ -11,7 +11,7 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages). 
 -->
 
-Depot is a Dart state management library intended for use with the Flutter apps.
+Depot is a Dart actor model state management library intended for use with the Flutter apps.
 
 Some of its inspirational sources are:
 

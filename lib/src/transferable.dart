@@ -108,7 +108,7 @@ abstract class Transferable {
 
   Map<String, dynamic> toMap();
 
-  Transferable();
+  const Transferable();
 
   factory Transferable.fromMap(Map<String, dynamic> data) {
     throw UnimplementedError(data.toString());

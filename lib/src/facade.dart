@@ -97,3 +97,37 @@ mixin FacadeSocket on Facade {
     }
   }
 }
+
+mixin FacadeIsolate on Facade {
+  // The black magic works here, dynamic typing is intentional
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    late final TramCall call;
+    late final returnValue;
+    // print('_tram.state.value is: ${_tram.state.value}');
+    switch (_mode) {
+      case CallMode.command:
+        call = TramCall.command(moduleType: _tram.facadeType, invocation: invocation, returner: returnerConstructor());
+        returnValue = null;
+        break;
+      case CallMode.request:
+        call = TramCall.request(
+            moduleType: _tram.facadeType, invocation: invocation, returner: returnerConstructor());
+        returnValue = call.returner.future;
+        break;
+      case CallMode.subscribe:
+        call = TramCall.subscribe(
+            moduleType: _tram.facadeType, invocation: invocation, returner: returnerConstructor());
+        returnValue = call.returner.stream;
+        break;
+    }
+    if (Depot.isolateTransport.ready) {
+      _tram.queue.add(call);
+      // print('command queued, queue length: ${_tram.queue.length}');
+      return returnValue;
+    } else {
+      // print('command fired, queue length: ${_tram.queue.length}');
+      return Depot.isolateTransport.makeCall(call);
+    }
+  }
+}

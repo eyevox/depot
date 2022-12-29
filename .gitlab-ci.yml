@@ -1,0 +1,10 @@
+include:
+  - project: library/pipelines
+    ref: master
+    file: global.yaml 
+  - project: library/pipelines
+    ref: master
+    file: flutter/flutter-test.yaml
+  - project: library/pipelines
+    ref: master
+    file: dart/dart-docs.yaml
