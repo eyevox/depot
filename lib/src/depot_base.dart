@@ -18,6 +18,11 @@ class Depot<F extends Facade> {
   static void Function(String) socketOutgoingCallback = (String value) => null;
   static final socketTransport =
       Transport(socketIncomingStreamController.stream, (String value) => socketOutgoingCallback(value));
+  static final isolateIncomingStreamController = StreamController<EnrichedMessage>();
+  static void Function(String) isolateOutgoingCallback = (String value) => null;
+  static final isolateTransport =
+      Transport(isolateIncomingStreamController.stream, (String value) => isolateOutgoingCallback(value));
+
   static void Function(String) logger = print;
 
   // Facade? selectedModule;
@@ -74,6 +79,14 @@ class Depot<F extends Facade> {
     required String name,
   }) {
     final tram = SocketTram<F>(name, constructor);
+    trams[F] = tram;
+  }
+
+  void isolateRegister<F extends Facade>({
+    required FacadeConstructor<F> constructor,
+    required String name,
+  }) {
+    final tram = IsolateTram<F>(name, constructor);
     trams[F] = tram;
   }
 

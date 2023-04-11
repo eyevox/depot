@@ -29,6 +29,18 @@ class EnrichedMessage {
   String value;
   Map<Symbol, dynamic> parameters;
   EnrichedMessage(this.value, [this.parameters = const {}]);
+  Map<String, dynamic>? get mapValue {
+    try {
+      final mapValue = jsonDecode(value) as Map<String, dynamic>;
+      if (mapValue['id'] is int && mapValue['type'] is String) {
+        return mapValue;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      return null;
+    }
+  }
 }
 
 class Transport {
@@ -48,7 +60,10 @@ class Transport {
   }
 
   void onIncomingMessage(EnrichedMessage enrichedMessage) {
-    final message = jsonDecode(enrichedMessage.value) as Map<String, dynamic>;
+    final message = enrichedMessage.mapValue;
+    if (message == null) {
+      return;
+    }
     final messageId = message['id'] as int;
     final messageType = MessageType.values.byName(message['type'] as String);
     switch (messageType) {
@@ -68,8 +83,9 @@ class Transport {
         if (!Depot.trams.containsKey(tramCall.moduleType)) {
           throw TypeNotFoundException(tramCall.moduleType);
         }
-        final tram = Depot.trams[tramCall.moduleType]! as LocalTram;
-        final result = tram.runMethod(method: tramCall.symbol,
+        final tram = Depot.trams[tramCall.moduleType]; // ! as LocalTram;
+        if (tram == null || tram is IsolateTram) break;
+        final result = (tram as LocalTram).runMethod(method: tramCall.symbol,
             positionalArguments: tramCall.positionalArguments,
             namedArguments: tramCall.namedArguments,
             zoneValues: enrichedMessage.parameters) as Future<dynamic>;

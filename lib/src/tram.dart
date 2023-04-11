@@ -110,3 +110,29 @@ class SocketTram<F extends Facade> extends Tram<F> {
     }
   }
 }
+
+class IsolateTram<F extends Facade> extends Tram<F> {
+  IsolateTram(super._name, super.facadeConstructor) : super() {
+    Depot.isolateTransport.readyStream.listen((ready) {
+      if (ready) {
+        processQueue();
+      }
+    });
+  }
+
+  // Pushed queued calls to target Module after the connection was established
+  void processQueue() {
+    // print('>>>> Queue processing: ${queue.length}');
+    while (queue.isNotEmpty) {
+      final element = queue.removeAt(0);
+      // final endpoint = guts.endpoints[element.symbol]!;
+      final result = Depot.isolateTransport.makeCall(element);
+      if (element.mode == CallMode.request) {
+        element.returner.complete(result);
+      }
+      if (element.mode == CallMode.subscribe) {
+        element.returner.addStream(result);
+      }
+    }
+  }
+}
