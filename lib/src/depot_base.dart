@@ -129,6 +129,7 @@ class Depot<F extends Facade> {
     if (trams.containsKey(F)) {
       tram = trams[F]! as Tram<F>;
     } else {
+      print(trams);
       throw NoTramException(F);
     }
 
