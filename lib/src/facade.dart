@@ -87,7 +87,7 @@ mixin FacadeSocket on Facade {
         returnValue = call.returner.stream;
         break;
     }
-    if (Depot.socketTransport.ready) {
+    if (!Depot.socketTransport.ready) {
       _tram.queue.add(call);
       // print('command queued, queue length: ${_tram.queue.length}');
       return returnValue;
@@ -121,7 +121,7 @@ mixin FacadeIsolate on Facade {
         returnValue = call.returner.stream;
         break;
     }
-    if (Depot.isolateTransport.ready) {
+    if (!Depot.isolateTransport.ready) {
       _tram.queue.add(call);
       // print('command queued, queue length: ${_tram.queue.length}');
       return returnValue;
