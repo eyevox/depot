@@ -1,6 +1,6 @@
 name: depot
 description: Depot is a Dart actor model state management library intended for use with the Flutter apps.
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/eyevox/depot
 
 environment:
