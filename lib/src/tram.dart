@@ -23,7 +23,7 @@ abstract class Tram<F extends Facade> {
 
   final Type facadeType;
   final FacadeConstructor<F> facadeConstructor;
-  final TramConnection connection;
+  TramConnection get connection;
   final BehaviorSubject<TramState> state;
   final String _name;
 
@@ -33,7 +33,7 @@ abstract class Tram<F extends Facade> {
 
   Tram(this._name, this.facadeConstructor)
       : facadeType = F,
-        connection = TramConnection.local,
+        // connection = TramConnection.local,
         state = BehaviorSubject.seeded(TramState.initializing) {}
 }
 
@@ -83,6 +83,9 @@ class LocalTram<F extends Facade> extends Tram<F> {
       Depot.logger('$logPrefix encountered error: $error, Stacktrace was: $stack');
     }, zoneValues: Map.of(zoneValues)..[#DepotModuleName] = name);
   }
+
+  @override
+  TramConnection get connection => TramConnection.local;
 }
 
 class SocketTram<F extends Facade> extends Tram<F> {
@@ -109,6 +112,9 @@ class SocketTram<F extends Facade> extends Tram<F> {
       }
     }
   }
+
+  @override
+  TramConnection get connection => TramConnection.socket;
 }
 
 class IsolateTram<F extends Facade> extends Tram<F> {
@@ -135,4 +141,7 @@ class IsolateTram<F extends Facade> extends Tram<F> {
       }
     }
   }
+
+  @override
+  TramConnection get connection => TramConnection.isolate;
 }
