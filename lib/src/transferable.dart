@@ -162,6 +162,12 @@ abstract class Transferable {
         'value': data.toTransfer(),
       };
     }
+    if (data is Iterable<int>) {
+      return data.fold<List<int>>(<int>[], (list, value) {
+        list.add(value);
+        return list;
+      });
+    }
     if (data is Iterable) {
       return data.fold<List<dynamic>>(<dynamic>[], (list, value) {
         list.add(Transferable.serialize(value));

@@ -96,8 +96,9 @@ class Transport {
         if (!Depot.trams.containsKey(tramCall.moduleType)) {
           throw TypeNotFoundException(tramCall.moduleType);
         }
-        final tram = Depot.trams[tramCall.moduleType]! as LocalTram;
-        final result = tram.runMethod(method: tramCall.symbol,
+        final tram = Depot.trams[tramCall.moduleType]; // ! as LocalTram;
+        if (tram == null || tram is IsolateTram) break;
+        final result = (tram as LocalTram).runMethod(method: tramCall.symbol,
             positionalArguments: tramCall.positionalArguments,
             namedArguments: tramCall.namedArguments,
             zoneValues: enrichedMessage.parameters) as Stream<dynamic>;
