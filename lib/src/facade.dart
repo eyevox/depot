@@ -34,19 +34,19 @@ mixin FacadeLocal on Facade {
           queueCall =
               TramCall.command(moduleType: tram.facadeType, invocation: invocation, returner: returnerConstructor());
           tram.queue.add(queueCall);
-          print('local command ${queueCall.symbol} queued, queue length: ${tram.queue.length}');
+          // print('local command ${queueCall.symbol} queued, queue length: ${tram.queue.length}');
           return;
         case CallMode.request:
           queueCall = TramCall.request(
               moduleType: tram.facadeType, invocation: invocation, returner: returnerConstructor());
           tram.queue.add(queueCall);
-          print('local request ${queueCall.symbol} queued, queue length: ${tram.queue.length}');
+          // print('local request ${queueCall.symbol} queued, queue length: ${tram.queue.length}');
           return queueCall.returner.future;
         case CallMode.subscribe:
           queueCall = TramCall.subscribe(
               moduleType: tram.facadeType, invocation: invocation, returner: returnerConstructor());
           tram.queue.add(queueCall);
-          print('local subscribe ${queueCall.symbol} queued, queue length: ${tram.queue.length}');
+          // print('local subscribe ${queueCall.symbol} queued, queue length: ${tram.queue.length}');
           return queueCall.returner.stream;
       }
     } else if (tram.state.value == TramState.ready) {
@@ -114,19 +114,19 @@ mixin FacadeIsolate on Facade {
             queueCall =
                 TramCall.command(moduleType: tram.facadeType, invocation: invocation, returner: returnerConstructor());
             tram.queue.add(queueCall);
-            print('command queued, queue length: ${tram.queue.length}');
+            // print('command queued, queue length: ${tram.queue.length}');
             return;
           case CallMode.request:
             queueCall = TramCall.request(
                 moduleType: tram.facadeType, invocation: invocation, returner: returnerConstructor());
             tram.queue.add(queueCall);
-            print('request queued, queue length: ${tram.queue.length}');
+            // print('request queued, queue length: ${tram.queue.length}');
             return queueCall.returner.future;
           case CallMode.subscribe:
             queueCall = TramCall.subscribe(
                 moduleType: tram.facadeType, invocation: invocation, returner: returnerConstructor());
             tram.queue.add(queueCall);
-            print('subscribe queued, queue length: ${tram.queue.length}');
+            // print('subscribe queued, queue length: ${tram.queue.length}');
             return queueCall.returner.stream;
         }
       } else if (tram.state.value == TramState.ready) {
@@ -163,11 +163,11 @@ mixin FacadeIsolate on Facade {
           break;
       }
       if (Depot.isolateTransport.ready) {
-        print('task ${call.symbol} fired, queue length: ${_tram.queue.length}');
+        // print('task ${call.symbol} fired, queue length: ${_tram.queue.length}');
         return Depot.isolateTransport.makeCall(call);
       } else {
         _tram.queue.add(call);
-        print('task ${call.symbol} queued, queue length: ${_tram.queue.length}');
+        // print('task ${call.symbol} queued, queue length: ${_tram.queue.length}');
         return returnValue;
       }
     }

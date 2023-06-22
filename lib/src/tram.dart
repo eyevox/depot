@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:depot/src/depot_exceptions.dart';
 import 'package:depot/src/facade.dart';
 import 'package:depot/src/module.dart';
 import 'package:depot/src/tram_call.dart';
@@ -75,13 +76,19 @@ class LocalTram<F extends Facade> extends Tram<F> {
       List<dynamic> positionalArguments = const [],
       Map<Symbol, dynamic> namedArguments = const {},
       Map<Symbol, dynamic> zoneValues = const {}}) {
-    final String logPrefix =
-        '[${Zone.current[#DepotModuleName] ?? 'rootZone'} > $name]: ${guts.endpoints[method]!.mode.name}';
-    Depot.logger('$logPrefix ($method) called with ${namedArguments.isNotEmpty ? namedArguments : positionalArguments}');
-    return runZonedGuarded<dynamic>(
-        () => Function.apply(guts.endpoints[method]!.call, positionalArguments, namedArguments), (error, stack) {
-      Depot.logger('$logPrefix encountered error: $error, Stacktrace was: $stack');
-    }, zoneValues: Map.of(zoneValues)..[#DepotModuleName] = name);
+    if (guts.endpoints.containsKey(method)) {
+      final String logPrefix =
+          '[${Zone.current[#DepotModuleName] ?? 'rootZone'} > $name]: ${guts.endpoints[method]!.mode.name}';
+      Depot.logger(
+          '$logPrefix ($method) called with ${namedArguments.isNotEmpty ? namedArguments : positionalArguments}');
+      return runZonedGuarded<dynamic>(
+              () => Function.apply(guts.endpoints[method]!.call, positionalArguments, namedArguments), (error, stack) {
+        Depot.logger('$logPrefix encountered error: $error, Stacktrace was: $stack');
+      }, zoneValues: Map.of(zoneValues)
+        ..[#DepotModuleName] = name);
+    } else {
+      throw NoMethodException(guts.runtimeType, method);
+    }
   }
 
   @override
