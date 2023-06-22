@@ -17,8 +17,6 @@ class Facade {
   const Facade(this._mode, this._tram, this.returnerConstructor);
 
   static String get name => '';
-
-  bool get local => false;
 }
 
 mixin FacadeLocal on Facade {
