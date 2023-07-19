@@ -1,5 +1,4 @@
 import 'package:depot/depot.dart';
-import 'package:depot/src/transferable.dart';
 
 enum StartPosition {
   ready,

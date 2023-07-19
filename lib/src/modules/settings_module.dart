@@ -4,7 +4,7 @@ import 'package:depot/depot.dart';
 import 'package:yaml/yaml.dart';
 
 /// [SettingsModuleFacade] - interface for SettingsModule
-class SettingsModuleFacade extends Facade with FacadeLocal {
+class SettingsModuleFacade extends Facade {
   //
   Future<String> getSettings(String keySetting);
 

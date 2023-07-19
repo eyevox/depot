@@ -49,7 +49,7 @@ addressing by indexes in calls.
 
 ```
 
-    Depot().register<ExampleUserModuleFacade>(ExampleUserModuleFacade.new, ExampleUserModule());
+    Depot().localRegister<ExampleUserModuleFacade>(ExampleUserModuleFacade.new, ExampleUserModule());
 
     final nameStream = Depot<ExampleUserModuleFacade>().subscribe<String>().userNameStream();
     Depot<ExampleUserModuleFacade>().command().setUserName('Jane Doe');

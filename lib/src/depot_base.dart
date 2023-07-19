@@ -43,51 +43,26 @@ class Depot<F extends Facade> {
     logger = stringLogger;
   }
 
-  /// Adds the Module to the Depot, using Facade as an interface
-  /// This method uses Type.toString as tram name, so names are lost on minification
-  /// Please, update your module with name getter and use localRegister
-  @Deprecated(
-      'This method uses Type.toString as tram name, so names are lost on minification. Please, update your module with name getter and use localRegister')
-  void register<F extends Facade>(FacadeConstructor<F> facadeConstructor, Module module,
-      [TramConnection connection = TramConnection.local]) {
-    switch (connection) {
-      case TramConnection.local:
-        final tram = LocalTram<F>(F.toString(), facadeConstructor, module);
-        trams[F] = tram;
-        break;
-      case TramConnection.isolate:
-        // TODO: Handle this case.
-        break;
-      case TramConnection.socket:
-        final tram = SocketTram<F>(F.toString(), facadeConstructor);
-        trams[F] = tram;
-        break;
-      case TramConnection.stub:
-        // TODO: Handle this case.
-        break;
-    }
+  void localRegister<T extends Facade>(
+      {required FacadeConstructor<T> constructor, required String name, required Module module}) {
+    final tram = LocalTram<T>(name, constructor, module);
+    trams[T] = tram;
   }
 
-  void localRegister<F extends Facade>(
-      {required FacadeConstructor<F> constructor, required String name, required Module module}) {
-    final tram = LocalTram<F>(name, constructor, module);
-    trams[F] = tram;
-  }
-
-  void socketRegister<F extends Facade>({
-    required FacadeConstructor<F> constructor,
+  void socketRegister<T extends Facade>({
+    required FacadeConstructor<T> constructor,
     required String name,
   }) {
-    final tram = SocketTram<F>(name, constructor);
-    trams[F] = tram;
+    final tram = SocketTram<T>(name, constructor);
+    trams[T] = tram;
   }
 
-  void isolateRegister<F extends Facade>({
-    required FacadeConstructor<F> constructor,
+  void isolateRegister<T extends Facade>({
+    required FacadeConstructor<T> constructor,
     required String name,
   }) {
-    final tram = IsolateTram<F>(name, constructor);
-    trams[F] = tram;
+    final tram = IsolateTram<T>(name, constructor);
+    trams[T] = tram;
   }
 
   // Tram getModuleByName(String name) => glossary[name]!;

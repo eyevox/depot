@@ -4,7 +4,7 @@ import 'package:depot/src/facade.dart';
 import 'package:depot/src/module.dart';
 import 'package:rxdart/rxdart.dart';
 
-class ExampleUserModuleFacade extends Facade with FacadeLocal {
+class ExampleUserModuleFacade extends Facade {
   Future<String> userName();
 
   Stream<String> userNameStream();
