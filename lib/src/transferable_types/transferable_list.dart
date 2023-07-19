@@ -31,6 +31,7 @@ class TransferableList<T extends Transferable> extends ListBase<T> with Transfer
   }
   
   @override
-  List<dynamic> toTransfer() => _list.map((e) => Transferable.serialize(e)).toList();
+  // List<dynamic> toTransfer() => _list.map((e) => Transferable.serialize(e)).toList();
+  List<dynamic> toTransfer() => _list.map((e) => e.toMap()).toList();
 
 }

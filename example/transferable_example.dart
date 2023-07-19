@@ -1,3 +1,4 @@
+import 'package:depot/depot.dart';
 import 'package:depot/src/transferable.dart';
 
 enum StartPosition {
@@ -43,13 +44,13 @@ class StartState extends Transferable {
 
 class RunnerData extends Transferable {
   String runner;
-  List<StartState> states;
+  TransferableList<StartState> states;
 
   RunnerData(this.runner, this.states);
 
   RunnerData.fromMap(Map<String, dynamic> data) :
       runner = data['runner'] as String,
-      states = (Transferable.materialize(data['states']) as List<dynamic>).cast<StartState>();
+      states = TransferableList(Transferable.materialize(data['states']).cast<StartState>());
 
   @override
   Map<String, dynamic> toMap() => {

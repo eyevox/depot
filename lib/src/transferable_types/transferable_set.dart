@@ -35,7 +35,8 @@ class TransferableSet<T extends Transferable> extends SetBase<T> with Transferab
   int get length => _internal.length;
   
   @override
-  Set<dynamic> toTransfer() {
-    return _internal.map((e) => Transferable.serialize(e)).toSet();
+  List<dynamic> toTransfer() {
+    // return _internal.map((e) => Transferable.serialize(e)).toSet();
+    return _internal.map((e) => e.toMap()).toList();
   }
 }

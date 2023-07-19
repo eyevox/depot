@@ -29,6 +29,7 @@ class TransferableMap<T extends Transferable> extends MapBase<String, T> with Tr
   
   @override
   Map<String, dynamic> toTransfer() {
-    return Map.fromEntries(_internal.entries.map((e) => MapEntry(e.key, Transferable.serialize(e.value))));
+    // return Map.fromEntries(_internal.entries.map((e) => MapEntry(e.key, Transferable.serialize(e.value))));
+    return Map.fromEntries(_internal.entries.map((e) => MapEntry(e.key, e.value.toMap())));
   }
 }

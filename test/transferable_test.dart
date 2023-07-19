@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:depot/src/transferable.dart';
 import 'package:depot/src/transferable_types/transferable_list.dart';
 import 'package:depot/src/transferable_types/transferable_map.dart';
-import 'package:depot/src/transferable_types/transferable_queue.dart';
 import 'package:depot/src/transferable_types/transferable_set.dart';
 import 'package:test/test.dart';
 
@@ -29,12 +28,27 @@ void main() {
           'StartPosition', StartPosition.values.byName);
     });
 
+    test('Transfer DateTime test', () async {
+      final stamp = DateTime.now();
+      final serialized = Transferable.serialize(stamp);
+      final result = Transferable.materialize(serialized);
+      expect(stamp, equals(result));
+    });
+
+    test('Transfer DateTime test', () async {
+      final list = <int>[1, 2, 3, 4, 5];
+      final serialized = Transferable.serialize(list);
+      final result = Transferable.materialize(serialized);
+      expect(list.runtimeType, equals(result.runtimeType));
+      expect(list, equals(result));
+    });
+
     test('Basic transferable test', () async {
       final startStateMap = <String, dynamic>{
         'transferableType': 'StartState',
         'value': {
           'startTime': {
-            'transferableType': 'DateTime',
+            'plainType': 'DateTime',
             'value': '2022-10-19T22:54:31.300Z'
           },
           'state': {'enumType': 'StartPosition', 'value': 'ready'}
@@ -51,18 +65,21 @@ void main() {
         'transferableType': 'RunnerData',
         'value': {
           'runner': 'Bolt',
-          'states': [
-            {
-              'transferableType': 'StartState',
-              'value': {
-                'startTime': {
-                  'transferableType': 'DateTime',
-                  'value': '2022-10-19T22:54:31.000Z'
-                },
-                'state': {'enumType': 'StartPosition', 'value': 'ready'}
+          'states': {
+            'transferableListType': 'StartState',
+            'value': [
+              {
+              //  'transferableType': 'StartState',
+              //  'value': {
+                  'startTime': {
+                    'plainType': 'DateTime',
+                    'value': '2022-10-19T22:54:31.000Z'
+                  },
+                  'state': {'enumType': 'StartPosition', 'value': 'ready'}
+              //  }
               }
-            }
-          ]
+            ]
+          }
         }
       };
       final runnerData =
@@ -76,18 +93,18 @@ void main() {
         'transferableType': 'RunnerData',
         'value': {
           'runner': 'Bolt',
-          'states': [
-            {
-              'transferableType': 'StartState',
-              'value': {
+          'states': {
+            'transferableListType': 'StartState',
+            'value': [
+              {
                 'startTime': {
-                  'transferableType': 'DateTime',
+                  'plainType': 'DateTime',
                   'value': '2022-10-19T22:54:31.000Z'
                 },
                 'state': {'enumType': 'StartPosition', 'value': 'ready'}
               }
-            }
-          ]
+            ]
+          }
         }
       };
       final runnerData =
@@ -125,7 +142,7 @@ void main() {
       final list = TransferableList<StartState>([
         StartState.fromMap({
           'startTime': {
-            'transferableType': 'DateTime',
+            'plainType': 'DateTime',
             'value': '2022-10-19T22:54:31.000Z'
           },
           'state': {'enumType': 'StartPosition', 'value': 'ready'}
@@ -143,7 +160,7 @@ void main() {
       final map = TransferableMap<StartState>({
         'one': StartState.fromMap({
           'startTime': {
-            'transferableType': 'DateTime',
+            'plainType': 'DateTime',
             'value': '2022-10-19T22:54:31.000Z'
           },
           'state': {'enumType': 'StartPosition', 'value': 'ready'}
@@ -158,7 +175,7 @@ void main() {
     });
 
     test('Test transferable', () async {
-      RunnerData runnerData = RunnerData('data', [state1, state2]);
+      RunnerData runnerData = RunnerData('data', TransferableList([state1, state2]));
 
       final resultMap = Transferable.serialize(runnerData);
       final data = Transferable.materialize(resultMap); //  as RunnerData
@@ -177,31 +194,6 @@ void main() {
       expect(set.lookup(state1), equals(state1));
       expect(data.runtimeType, equals(set.runtimeType));
       expect((data as TransferableSet<StartState>).length == set.length, isTrue);
-    });
-
-    test('Test transferable queue with data', () async {
-      final queue = TransferableQueue<StartState>.fromList([state1, state2]);
-      final serialized = Transferable.serialize(queue);
-      final data = Transferable.materialize(serialized); // as Set<StartState> // type '_InternalLinkedHashMap<String, dynamic>' is not a subtype of type 'Set<StartState>' in type cast
-
-      expect(data.runtimeType, equals(queue.runtimeType));
-      expect((data as TransferableQueue<StartState>).length == queue.length, isTrue);
-    }, skip: 'queue is not supporting current time');
-
-    test('Test transferable queue fromList', () async {
-      final queue = TransferableQueue<StartState>.fromList([state1, state2]);
-      // final serialized = Transferable.serialize(queue);
-
-      expect(queue.length, equals(2));
-    });
-
-    test('Test transferable queue initialCapacity', () async {
-      final queue = TransferableQueue<StartState>(1);
-      queue.add(state1);
-      queue.add(state2);
-      // final serialized = Transferable.serialize(queue);
-
-      expect(queue.length, equals(2));
     });
 
   });
