@@ -32,6 +32,7 @@ class Depot<F extends Facade> {
 
   Depot._internal();
 
+  /// This factory constructor binds the type parameter (module name) to the singleton instance
   factory Depot() {
     if (!_self.containsKey(F)) {
       _self[F] = Depot<F>._internal();
@@ -39,16 +40,19 @@ class Depot<F extends Facade> {
     return _self[F] as Depot<F>;
   }
 
+  /// Sets logger to output debug information. The default is print to console
   static void setLogger(void Function(String) stringLogger) {
     logger = stringLogger;
   }
 
+  /// Registers the module and instantiates it in current runtime
   void localRegister<T extends Facade>(
       {required FacadeConstructor<T> constructor, required String name, required Module module}) {
     final tram = LocalTram<T>(name, constructor, module);
     trams[T] = tram;
   }
 
+  /// Registers the module from other runtime, connected by socket transport
   void socketRegister<T extends Facade>({
     required FacadeConstructor<T> constructor,
     required String name,
@@ -57,6 +61,7 @@ class Depot<F extends Facade> {
     trams[T] = tram;
   }
 
+  /// Registers the module running in isolate
   void isolateRegister<T extends Facade>({
     required FacadeConstructor<T> constructor,
     required String name,

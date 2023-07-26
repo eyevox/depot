@@ -295,21 +295,76 @@ abstract class Transferable {
     // }
   }
 
+  // static dynamic copy(dynamic data) {
+  //   if (data is Enum) {
+  //     return data;
+  //   }
+  //   if (data is String || data is num || data is bool || data is DateTime) {
+  //     return data;
+  //   }
+  //   if (data is Map<String, dynamic>) {
+  //     return data.map((key, value) => MapEntry(key, Transferable.copy(value) as dynamic));
+  //   }
+  //   if (data is Iterable<dynamic>) {
+  //     // return data.map(Transferable.copy).toList(growable: false);
+  //     return Transferable.materialize(Transferable.serialize(data));
+  //   }
+  //   if (data is Transferable) {
+  //     return Transferable.registry.get(registry.transferableName(data.runtimeType))(data.toMap());
+  //   }
+  // }
+
+  // TODO Optimize
   static dynamic copy(dynamic data) {
-    if (data is Enum) {
-      return data;
-    }
-    if (data is String || data is num || data is bool || data is DateTime) {
-      return data;
-    }
-    if (data is Map<String, dynamic>) {
-      return data.map((key, value) => MapEntry(key, Transferable.copy(value) as dynamic));
-    }
-    if (data is Iterable<dynamic>) {
-      return data.map(Transferable.copy).cast<dynamic>().toList(growable: false);
-    }
-    if (data is Transferable) {
-      return Transferable.registry.get(registry.transferableName(data.runtimeType))(data.toMap());
+    switch (data) {
+      case String data:
+        return data;
+      case num data:
+        return data;
+      case bool data:
+        return data;
+      case Enum data:
+        return data;
+      case DateTime data:
+        return data.copyWith();
+      case TransferableList data:
+        return Transferable.materialize(Transferable.serialize(data));
+      case TransferableMap data:
+        return Transferable.materialize(Transferable.serialize(data));
+      case TransferableSet data:
+        return Transferable.materialize(Transferable.serialize(data));
+      case Transferable data:
+        return Transferable.materialize(Transferable.serialize(data));
+      case Iterable<int> data:
+        return List<int>.from(data);
+      case Iterable<double> data:
+        return List<double>.from(data);
+      case Iterable<String> data:
+        return List<String>.from(data);
+      case Iterable<bool> data:
+        return List<bool>.from(data);
+      case Iterable<DateTime> data:
+        return List<DateTime>.from(data.map((value) => value.copyWith()));
+      case Iterable<Transferable> data:
+        return Transferable.materialize(Transferable.serialize(data));
+      case Iterable<dynamic> data:
+        return List<dynamic>.from(data);
+      case Map<String, int> data:
+        return Map<String, int>.of(data);
+      case Map<String, double> data:
+        return Map<String, double>.of(data);
+      case Map<String, num> data:
+        return Map<String, num>.of(data);
+      case Map<String, String> data:
+        return Map<String, String>.of(data);
+      case Map<String, bool> data:
+        return Map<String, bool>.of(data);
+      case Map<String, DateTime> data:
+        return data.map<String, DateTime>((key, value) => MapEntry(key, value.copyWith()));
+      case Map<String, Transferable> data:
+        return Transferable.materialize(Transferable.serialize(data));
+      case Map<String, dynamic> data:
+        return Map<String, dynamic>.of(data);
     }
   }
 }
