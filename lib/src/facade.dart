@@ -19,7 +19,7 @@ class Facade {
   static String get name => '';
 
   dynamic noSuchMethod(Invocation invocation) {
-    if (_tram.connection == TramConnection.local) {
+    if (_tram.isLocal) {
       final tram = _tram as LocalTram;
       final symbol = invocation.memberName;
       // print('_tram.state.value is: ${tram.state.value}');
@@ -79,12 +79,9 @@ class Facade {
           returnValue = call.returner.stream;
           break;
       }
-      if (_tram.connection == TramConnection.isolate && Depot.isolateTransport.ready) {
-        // print('isolate task ${call.symbol} fired, queue length: ${_tram.queue.length}');
-        return Depot.isolateTransport.makeCall(call);
-      } else if (_tram.connection == TramConnection.socket && Depot.socketTransport.ready) {
-        // print('socket task ${call.symbol} fired, queue length: ${_tram.queue.length}');
-        return Depot.socketTransport.makeCall(call);
+      if (_tram is RemoteTram && (_tram as RemoteTram).transport.ready) {
+        // print('remote task ${call.symbol} fired, queue length: ${_tram.queue.length}');
+        return (_tram as RemoteTram).transport.makeCall(call);
       } else {
         _tram.queue.add(call);
         // print('task ${call.symbol} queued, queue length: ${_tram.queue.length}');
@@ -180,7 +177,7 @@ mixin FacadeIsolate on Facade {
   // The black magic works here, dynamic typing is intentional
   @override
   dynamic noSuchMethod(Invocation invocation) {
-    if (_tram.connection == TramConnection.local) {
+    if (_tram.isLocal) {
       final tram = _tram as LocalTram;
       final symbol = invocation.memberName;
       // print('_tram.state.value is: ${tram.state.value}');

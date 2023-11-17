@@ -5,11 +5,11 @@ import 'package:depot/src/facade.dart';
 import 'package:depot/src/module.dart';
 import 'package:depot/src/tram_call.dart';
 import 'package:depot/src/depot_base.dart';
+import 'package:depot/src/transport.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Tram is a base class for model component
 
-enum TramConnection { local, isolate, socket, stub }
 
 enum TramState {
   idle,
@@ -24,7 +24,7 @@ abstract class Tram<F extends Facade> {
 
   final Type facadeType;
   final FacadeConstructor<F> facadeConstructor;
-  TramConnection get connection;
+  bool get isLocal;
   final BehaviorSubject<TramState> state;
   final String _name;
 
@@ -92,12 +92,13 @@ class LocalTram<F extends Facade> extends Tram<F> {
   }
 
   @override
-  TramConnection get connection => TramConnection.local;
+  bool get isLocal => true;
 }
 
-class SocketTram<F extends Facade> extends Tram<F> {
-  SocketTram(super._name, super.facadeConstructor) : super() {
-    Depot.socketTransport.readyStream.listen((ready) {
+class RemoteTram<F extends Facade> extends Tram<F> {
+  final Transport transport;
+  RemoteTram(super._name, super.facadeConstructor, this.transport) : super() {
+    transport.readyStream.listen((ready) {
       if (ready) {
         processQueue();
       }
@@ -110,7 +111,7 @@ class SocketTram<F extends Facade> extends Tram<F> {
     while (queue.isNotEmpty) {
       final element = queue.removeAt(0);
       // final endpoint = guts.endpoints[element.symbol]!;
-      final result = Depot.socketTransport.makeCall(element);
+      final result = transport.makeCall(element);
       if (element.mode == CallMode.request) {
         element.returner.complete(result);
       }
@@ -121,34 +122,6 @@ class SocketTram<F extends Facade> extends Tram<F> {
   }
 
   @override
-  TramConnection get connection => TramConnection.socket;
+  bool get isLocal => false;
 }
 
-class IsolateTram<F extends Facade> extends Tram<F> {
-  IsolateTram(super._name, super.facadeConstructor) : super() {
-    Depot.isolateTransport.readyStream.listen((ready) {
-      if (ready) {
-        processQueue();
-      }
-    });
-  }
-
-  // Pushed queued calls to target Module after the connection was established
-  void processQueue() {
-    // print('>>>> Queue processing: ${queue.length}');
-    while (queue.isNotEmpty) {
-      final element = queue.removeAt(0);
-      // final endpoint = guts.endpoints[element.symbol]!;
-      final result = Depot.isolateTransport.makeCall(element);
-      if (element.mode == CallMode.request) {
-        element.returner.complete(result);
-      }
-      if (element.mode == CallMode.subscribe) {
-        element.returner.addStream(result);
-      }
-    }
-  }
-
-  @override
-  TramConnection get connection => TramConnection.isolate;
-}

@@ -52,23 +52,26 @@ class Depot<F extends Facade> {
     trams[T] = tram;
   }
 
+  /// Registers the module from other runtime, connected by specified remote transport
+  void RemoteRegister<T extends Facade>({
+    required FacadeConstructor<T> constructor,
+    required String name,
+    required Transport transport
+  }) {
+    trams[T] = RemoteTram<T>(name, constructor, transport);
+  }
+
   /// Registers the module from other runtime, connected by socket transport
   void socketRegister<T extends Facade>({
     required FacadeConstructor<T> constructor,
     required String name,
-  }) {
-    final tram = SocketTram<T>(name, constructor);
-    trams[T] = tram;
-  }
+  }) => RemoteRegister(constructor: constructor, name: name, transport: socketTransport);
 
   /// Registers the module running in isolate
   void isolateRegister<T extends Facade>({
     required FacadeConstructor<T> constructor,
     required String name,
-  }) {
-    final tram = IsolateTram<T>(name, constructor);
-    trams[T] = tram;
-  }
+  }) => RemoteRegister(constructor: constructor, name: name, transport: isolateTransport);
 
   // Tram getModuleByName(String name) => glossary[name]!;
 
@@ -87,19 +90,6 @@ class Depot<F extends Facade> {
       throw NoTramException(F);
     }
 
-    switch (tram.connection) {
-      case TramConnection.local:
-        return tram.facadeConstructor(CallMode.command, tram, Returner<void>.new);
-      case TramConnection.isolate:
-        // TODO: Handle this case.
-        break;
-      case TramConnection.socket:
-        // TODO: Handle this case.
-        break;
-      case TramConnection.stub:
-        // TODO: Handle this case.
-        break;
-    }
     return tram.facadeConstructor(CallMode.command, tram, Returner<void>.new);
   }
 
@@ -112,19 +102,6 @@ class Depot<F extends Facade> {
       throw NoTramException(F);
     }
 
-    switch (tram.connection) {
-      case TramConnection.local:
-        return tram.facadeConstructor(CallMode.request, tram, Returner<R>.new);
-      case TramConnection.isolate:
-        // TODO: Handle this case.
-        break;
-      case TramConnection.socket:
-        // TODO: Handle this case.
-        break;
-      case TramConnection.stub:
-        // TODO: Handle this case.
-        break;
-    }
     return tram.facadeConstructor(CallMode.request, tram, Returner<R>.new);
   }
 
@@ -137,19 +114,6 @@ class Depot<F extends Facade> {
       throw NoTramException(F);
     }
 
-    switch (tram.connection) {
-      case TramConnection.local:
-        return tram.facadeConstructor(CallMode.subscribe, tram, Returner<R>.new);
-      case TramConnection.isolate:
-        // TODO: Handle this case.
-        break;
-      case TramConnection.socket:
-        // TODO: Handle this case.
-        break;
-      case TramConnection.stub:
-        // TODO: Handle this case.
-        break;
-    }
     return tram.facadeConstructor(CallMode.subscribe, tram, Returner<R>.new);
   }
 

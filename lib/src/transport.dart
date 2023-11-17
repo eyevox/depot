@@ -8,6 +8,8 @@ import 'package:depot/src/tram_call.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum MessageType { command, request, subscribe, unsubscribe, result }
+typedef OutgoingCallback = void Function(String);
+typedef ParametrizedOutgoingCallback = void Function({Map<Symbol, dynamic> parameters});
 
 MessageType getMessageType(CallMode mode) {
   switch (mode) {
@@ -26,8 +28,8 @@ class Enumerator {
 }
 
 class EnrichedMessage {
-  String value;
-  Map<Symbol, dynamic> parameters;
+  final String value;
+  final Map<Symbol, dynamic> parameters;
   EnrichedMessage(this.value, [this.parameters = const {}]);
   Map<String, dynamic>? get mapValue {
     try {
@@ -48,14 +50,18 @@ class Transport {
   Map<int, StreamSubscription<dynamic>> streams = {};
   Enumerator enumerator = Enumerator();
   Stream<EnrichedMessage> incomingStream;
-  void Function(String) outgoingCallback;
+  Function outgoingCallback;
   BehaviorSubject<bool> _ready = BehaviorSubject.seeded(false);
   bool get ready => _ready.value;
   Stream<bool> get readyStream => _ready.stream;
   void start() => _ready.add(true);
   void stop() => _ready.add(false);
 
-  Transport(this.incomingStream, this.outgoingCallback) {
+  Transport(this.incomingStream, OutgoingCallback this.outgoingCallback) {
+    incomingStream.listen(onIncomingMessage);
+  }
+
+  Transport.parametrized(this.incomingStream, ParametrizedOutgoingCallback this.outgoingCallback) {
     incomingStream.listen(onIncomingMessage);
   }
 
@@ -84,7 +90,7 @@ class Transport {
           throw TypeNotFoundException(tramCall.moduleType);
         }
         final tram = Depot.trams[tramCall.moduleType]; // ! as LocalTram;
-        if (tram == null || tram is IsolateTram) break;
+        if (tram == null || !tram.isLocal) break;
         final result = (tram as LocalTram).runMethod(method: tramCall.symbol,
             positionalArguments: tramCall.positionalArguments,
             namedArguments: tramCall.namedArguments,
@@ -97,7 +103,7 @@ class Transport {
           throw TypeNotFoundException(tramCall.moduleType);
         }
         final tram = Depot.trams[tramCall.moduleType]; // ! as LocalTram;
-        if (tram == null || tram is IsolateTram) break;
+        if (tram == null || !tram.isLocal) break;
         final result = (tram as LocalTram).runMethod(method: tramCall.symbol,
             positionalArguments: tramCall.positionalArguments,
             namedArguments: tramCall.namedArguments,
@@ -124,7 +130,7 @@ class Transport {
     }
   }
 
-  void outgoingResultMessage(int messageId, dynamic value) {
+  void outgoingResultMessage(int messageId, dynamic value, [Map<Symbol, dynamic> parameters = const {}]) {
     final message = jsonEncode({'id': messageId, 'type': 'result', 'value': Transferable.serialize(value)});
     outgoingCallback(message);
   }

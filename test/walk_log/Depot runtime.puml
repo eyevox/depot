@@ -1,0 +1,45 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+
+package "Local Module 1" {
+  [Module 1 (Implementation)]
+  [Facade 1 (Interface)]
+  [Module 1 (Implementation)] -u-> [Facade 1 (Interface)] : implements
+}
+
+package "Local Module 2" {
+  [Module 2 (Implementation)]
+  [Facade 2 (Interface)]
+  [Module 2 (Implementation)] -u-> [Facade 2 (Interface)] : implements
+}
+
+package "External Module" {
+  [Facade (implemented in different runtime]
+}
+
+cloud "Depot instance (Singleton)"{
+  [Local Tram 1]
+  [Local Tram 2]
+  [External Tram]
+  database "Incoming message queue" {
+    [message to Module 1]
+    [another message to Module 1]
+    [message to Module 2]
+    [another message to Module 1] -u[hidden]- [message to Module 1]
+    [message to Module 2] -u[hidden]- [another message to Module 1]
+  }
+  [Local Tram 2] -u[hidden]- [Local Tram 1]
+  [External Tram] -u[hidden]- [Local Tram 2]
+}
+
+"Local Module 1" -r-> [Local Tram 1] : registered into
+"Local Module 2" -r-> [Local Tram 2] : registered into
+"External Module" -r-> [External Tram] : registered into
+[External Tram] --> transport : linked to
+"Runtime native event loop" -u-> [Incoming message queue]
+
+"Local Module 2" -u[hidden]- "Local Module 1"
+"External Module" -u[hidden]- "Local Module 2"
+
+@enduml

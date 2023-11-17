@@ -1,0 +1,51 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+
+
+together {
+    package "Local Module 1" {
+      [Module 1 (Implementation)]
+    }
+
+    package "Local Module 2" {
+      [Module 2 (Implementation)]
+    }
+
+    "Local Module 2" -[hidden]u- "Local Module 1"
+}
+
+cloud "Depot instance (Singleton)"{
+  [Local Tram 1]
+  [Local Tram 2]
+  [External Tram]
+  database "Incoming message queue" {
+    [message to Module 1]
+    [another message to Module 1]
+    [message to Module 2]
+    [another message to Module 1] -[hidden]u- [message to Module 1]
+    [message to Module 2] -[hidden]u- [another message to Module 1]
+    [message to External Module] -[hidden]u- [message to Module 2]
+  }
+  [message to Module 1] -> [Local Tram 1] : Routed
+  [another message to Module 1] -> [Local Tram 1] : Routed
+  [message to Module 2] --> [Local Tram 2] : Routed
+  [message to External Module] --> [External Tram] : Routed
+  [Local Tram 2] -[hidden]u- [Local Tram 1]
+  [External Tram] -[hidden]u- [Local Tram 2]
+}
+
+[Module 1 (Implementation)] -[norank]> "Incoming message queue" : messages
+[Module 2 (Implementation)] -[norank]> "Incoming message queue" : messages
+[Module 1 (Implementation)] <-r- [Local Tram 1] : Method calls
+[Module 2 (Implementation)] <-r- [Local Tram 2] : Method calls
+
+[External Tram] --> transport : message to external module
+"Runtime native event loop" -u-> [Incoming message queue]
+
+
+"Local Module 1" -[hidden]r- "Depot instance (Singleton)"
+"Local Module 2" -[hidden]r- "Depot instance (Singleton)"
+
+
+@enduml
