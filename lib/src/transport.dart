@@ -9,7 +9,7 @@ import 'package:rxdart/rxdart.dart';
 
 enum MessageType { command, request, subscribe, unsubscribe, result }
 typedef OutgoingCallback = void Function(String);
-typedef ParametrizedOutgoingCallback = void Function({Map<Symbol, dynamic> parameters});
+typedef ParametrizedOutgoingCallback = void Function(String, [Map<Symbol, dynamic> parameters]);
 
 MessageType getMessageType(CallMode mode) {
   switch (mode) {
@@ -50,18 +50,19 @@ class Transport {
   Map<int, StreamSubscription<dynamic>> streams = {};
   Enumerator enumerator = Enumerator();
   Stream<EnrichedMessage> incomingStream;
-  Function outgoingCallback;
+  final Function outgoingCallback;
   BehaviorSubject<bool> _ready = BehaviorSubject.seeded(false);
   bool get ready => _ready.value;
   Stream<bool> get readyStream => _ready.stream;
   void start() => _ready.add(true);
   void stop() => _ready.add(false);
+  final bool _isRich;
 
-  Transport(this.incomingStream, OutgoingCallback this.outgoingCallback) {
+  Transport(this.incomingStream, OutgoingCallback this.outgoingCallback): _isRich = false {
     incomingStream.listen(onIncomingMessage);
   }
 
-  Transport.parametrized(this.incomingStream, ParametrizedOutgoingCallback this.outgoingCallback) {
+  Transport.parametrized(this.incomingStream, ParametrizedOutgoingCallback this.outgoingCallback): _isRich = true {
     incomingStream.listen(onIncomingMessage);
   }
 
@@ -95,7 +96,7 @@ class Transport {
             positionalArguments: tramCall.positionalArguments,
             namedArguments: tramCall.namedArguments,
             zoneValues: enrichedMessage.parameters) as Future<dynamic>;
-        result.then((value) => outgoingResultMessage(messageId, value));
+        result.then((value) => outgoingResultMessage(messageId, value, enrichedMessage.parameters));
         break;
       case MessageType.subscribe:
         final tramCall = TramCall.fromMap(message['payload'] as Map<String, dynamic>);
@@ -108,7 +109,7 @@ class Transport {
             positionalArguments: tramCall.positionalArguments,
             namedArguments: tramCall.namedArguments,
             zoneValues: enrichedMessage.parameters) as Stream<dynamic>;
-        streams[messageId] = result.listen((value) => outgoingResultMessage(messageId, value));
+        streams[messageId] = result.listen((value) => outgoingResultMessage(messageId, value, enrichedMessage.parameters));
         break;
       case MessageType.unsubscribe:
         if (streams.containsKey(messageId)) {
@@ -132,7 +133,11 @@ class Transport {
 
   void outgoingResultMessage(int messageId, dynamic value, [Map<Symbol, dynamic> parameters = const {}]) {
     final message = jsonEncode({'id': messageId, 'type': 'result', 'value': Transferable.serialize(value)});
-    outgoingCallback(message);
+    if (_isRich) {
+      outgoingCallback(message, parameters);
+    } else {
+      outgoingCallback(message);
+    }
   }
 
   dynamic makeCall(TramCall call) {

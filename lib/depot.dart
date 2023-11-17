@@ -12,6 +12,6 @@ export 'src/transferable_types/transferable_map.dart';
 export 'src/transferable_types/transferable_set.dart';
 export 'src/transferable_types/transferable_type_adapter.dart';
 export 'src/modules/settings_module.dart';
-export 'src/transport.dart' show EnrichedMessage;
+export 'src/transport.dart' show EnrichedMessage, Transport;
 
 // TODO: Export any libraries intended for clients of this package.
